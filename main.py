@@ -11,7 +11,13 @@ def compress_pdf_bytes(
     image_quality: int = 70,
     dpi: int = 120,
     new_width: int = 800,
+    preserve_color: bool = False,
 ) -> bytes:
+    """Compress a PDF represented by bytes.
+
+    If preserve_color is False the pages are converted to grayscale (existing behavior).
+    If preserve_color is True pages will be kept in RGB color.
+    """
     pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
     total_pages = len(pdf_document)
 
@@ -26,14 +32,19 @@ def compress_pdf_bytes(
         img = Image.open(BytesIO(pix.tobytes("png")))
         w, h = img.size
         new_h = int(h * new_width / w)
-        # keep existing behavior (grayscale conversion)
-        img = img.resize((new_width, new_h), Image.Resampling.LANCZOS).convert("L")
+        # preserve color when requested, otherwise keep existing grayscale conversion
+        if preserve_color:
+            img = img.resize((new_width, new_h), Image.Resampling.LANCZOS).convert("RGB")
+        else:
+            img = img.resize((new_width, new_h), Image.Resampling.LANCZOS).convert("L")
         images.append(img)
 
     if not images:
         raise ValueError("No pages selected to compress")
 
     output = BytesIO()
+    # If images are color (RGB), Pillow will embed color images into the PDF;
+    # quality still controls JPEG compression used inside PDF when saving.
     images[0].save(
         output,
         format="PDF",
@@ -76,6 +87,10 @@ def main():
     with col2:
         new_width = st.slider("Page width (pixels)", 400, 1600, 800)
 
+    # New: choose grayscale or color
+    color_mode = st.radio("Color mode", ("Grayscale", "Color"), index=0)
+    preserve_color = color_mode == "Color"
+
     start_page = st.number_input("Start page (leave 0 for first)", min_value=0, value=0)
     end_page = st.number_input("End page (0 = last page)", min_value=0, value=0)
 
@@ -111,6 +126,7 @@ def main():
                         image_quality=image_quality,
                         dpi=dpi,
                         new_width=new_width,
+                        preserve_color=preserve_color,
                     )
                 except Exception as e:
                     st.error(f"Compression failed: {e}")
