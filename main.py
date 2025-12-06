@@ -100,10 +100,6 @@ def main():
         layout="centered",
     )
 
-    # after set_page_config
-    # logo = Image.open("icon.png")
-    # st.image(logo, width=96)
-
     st.title("PDF / Image Compressor")
 
     # accept pdf and common image types
