@@ -3,6 +3,7 @@ from io import BytesIO
 import fitz
 from PIL import Image
 from typing import Optional
+import time
 
 def compress_pdf_bytes(
     pdf_bytes: bytes,
@@ -117,6 +118,7 @@ def main():
             base_name = uploaded_file.name.rsplit(".", 1)[0]
 
         if pdf_bytes and st.button("Compress PDF"):
+            start_time = time.time()
             with st.spinner("Compressing..."):
                 try:
                     compressed_bytes = compress_pdf_bytes(
@@ -133,7 +135,9 @@ def main():
                     compressed_bytes = None
 
             if compressed_bytes:
-                st.success("Done!")
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+                st.success(f"Done in {elapsed_time:.2f} seconds!")
                 out_name = f"{base_name}_compressed.pdf"
                 st.download_button(
                     label="Download compressed PDF",
