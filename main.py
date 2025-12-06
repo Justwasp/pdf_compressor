@@ -1,10 +1,10 @@
+from PIL import Image
 import streamlit as st
 from io import BytesIO
 import fitz
 from PIL import Image
 from typing import Optional
 import time
-
 
 def compress_pdf_bytes(
     pdf_bytes: bytes,
@@ -94,6 +94,16 @@ def image_bytes_to_pdf_bytes(image_bytes: bytes) -> bytes:
 
 
 def main():
+    st.set_page_config(
+        page_title="PDF / Image Compressor",
+        page_icon="icon.png",  # or "assets/icon.png" if you put it in a subfolder
+        layout="centered",
+    )
+
+    # after set_page_config
+    # logo = Image.open("icon.png")
+    # st.image(logo, width=96)
+
     st.title("PDF / Image Compressor")
 
     # accept pdf and common image types
